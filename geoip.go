@@ -27,11 +27,11 @@ type GeoIP struct {
 func GeoIP_Open(base string) *GeoIP {
 	cbase := C.CString(base)
 	gi := C.GeoIP_open(cbase, C.GEOIP_MEMORY_CACHE)
-	C.GeoIP_set_charset(gi, C.GEOIP_CHARSET_UTF8)
-	C.free(unsafe.Pointer(cbase))
 	if gi == nil {
 		return nil
 	}
+	C.GeoIP_set_charset(gi, C.GEOIP_CHARSET_UTF8)
+	C.free(unsafe.Pointer(cbase))
 	return &GeoIP{gi}
 }
 

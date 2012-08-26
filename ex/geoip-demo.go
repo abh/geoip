@@ -36,14 +36,17 @@ func main() {
 	country = gi6.GetCountry_v6("2607:f238:2::5")
 	display(country)
 
+	country = gi.GetCountry("127.0.0.1")
+	display(country)
+
 }
 
-func display(country *string) {
+func display(country string) {
 	switch country {
-	case nil:
+	case "":
 		fmt.Printf("Could not get country\n")
 	default:
-		fmt.Printf("Country %s\n", *country)
+		fmt.Printf("Country %s\n", country)
 	}
 
 }

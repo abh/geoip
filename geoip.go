@@ -36,32 +36,32 @@ func GeoIP_Open(base string) *GeoIP {
 }
 
 // GetCountry takes an IPv4 address string and returns the country code for that IP.
-func (gi *GeoIP) GetCountry(ip string) *string {
+func (gi *GeoIP) GetCountry(ip string) string {
 	if gi == nil {
-		return nil
+		return ""
 	}
 	cip := C.CString(ip)
 	ccountry := C.GeoIP_country_code_by_addr(gi.gi, cip)
 	C.free(unsafe.Pointer(cip))
 	if ccountry != nil {
 		rets := C.GoString(ccountry)
-		return &rets
+		return rets
 	}
-	return nil
+	return ""
 }
 
 // GetCountry_v6 works the same as GetCountry except for IPv6 addresses, be sure to
 // load a database with IPv6 data to get any results.
-func (gi *GeoIP) GetCountry_v6(ip string) *string {
+func (gi *GeoIP) GetCountry_v6(ip string) string {
 	if gi == nil {
-		return nil
+		return ""
 	}
 	cip := C.CString(ip)
 	ccountry := C.GeoIP_country_code_by_addr_v6(gi.gi, cip)
 	C.free(unsafe.Pointer(cip))
 	if ccountry != nil {
 		rets := C.GoString(ccountry)
-		return &rets
+		return rets
 	}
-	return nil
+	return ""
 }

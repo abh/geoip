@@ -13,35 +13,65 @@ package geoip
 import "C"
 
 import (
+	"log"
 	"unsafe"
 )
 
+// Set Quiet to true to silence warnings when the database can't be opened
+// (though libgeoip still prints to errout)
+var Quiet bool = false
+
 type GeoIP struct {
-	gi *C.GeoIP
+	db *C.GeoIP
 }
 
 // Open opens a GeoIP database, all formats supported by libgeoip are supported though
 // there are only functions to access the country information in this API.
 // The database is opened in MEMORY_CACHE mode, if you need to optimize for memory
 // instead of performance you should change this.
-func GeoIP_Open(base string) *GeoIP {
-	cbase := C.CString(base)
-	gi := C.GeoIP_open(cbase, C.GEOIP_MEMORY_CACHE)
-	if gi == nil {
-		return nil
+// If you don't pass a filename, it will try opening the database from
+// a list of common paths.
+func Open(files ...string) *GeoIP {
+
+	if len(files) == 0 {
+		files = []string{
+			"/usr/share/GeoIP/GeoIP.dat",
+			"/usr/share/local/GeoIP/GeoIP.dat",
+			"/opt/local/share/GeoIP/GeoIP.dat",
+		}
 	}
-	C.GeoIP_set_charset(gi, C.GEOIP_CHARSET_UTF8)
-	C.free(unsafe.Pointer(cbase))
-	return &GeoIP{gi}
+
+	g := &GeoIP{}
+
+	var err error
+
+	for _, file := range files {
+		cbase := C.CString(file)
+		g.db, err = C.GeoIP_open(cbase, C.GEOIP_MEMORY_CACHE)
+		C.free(unsafe.Pointer(cbase))
+		if g.db != nil && err != nil {
+			break
+		}
+	}
+	if err != nil && !Quiet {
+		log.Println("Error opening GeoIP database", files, err)
+	}
+
+	if g.db != nil {
+		C.GeoIP_set_charset(g.db, C.GEOIP_CHARSET_UTF8)
+		return g
+	}
+
+	return nil
 }
 
 // GetCountry takes an IPv4 address string and returns the country code for that IP.
 func (gi *GeoIP) GetCountry(ip string) string {
-	if gi == nil {
+	if gi.db == nil {
 		return ""
 	}
 	cip := C.CString(ip)
-	ccountry := C.GeoIP_country_code_by_addr(gi.gi, cip)
+	ccountry := C.GeoIP_country_code_by_addr(gi.db, cip)
 	C.free(unsafe.Pointer(cip))
 	if ccountry != nil {
 		rets := C.GoString(ccountry)
@@ -53,11 +83,11 @@ func (gi *GeoIP) GetCountry(ip string) string {
 // GetCountry_v6 works the same as GetCountry except for IPv6 addresses, be sure to
 // load a database with IPv6 data to get any results.
 func (gi *GeoIP) GetCountry_v6(ip string) string {
-	if gi == nil {
+	if gi.db == nil {
 		return ""
 	}
 	cip := C.CString(ip)
-	ccountry := C.GeoIP_country_code_by_addr_v6(gi.gi, cip)
+	ccountry := C.GeoIP_country_code_by_addr_v6(gi.db, cip)
 	C.free(unsafe.Pointer(cip))
 	if ccountry != nil {
 		rets := C.GoString(ccountry)

@@ -14,6 +14,7 @@ import "C"
 
 import (
 	"log"
+	"os"
 	"unsafe"
 )
 
@@ -32,7 +33,6 @@ type GeoIP struct {
 // If you don't pass a filename, it will try opening the database from
 // a list of common paths.
 func Open(files ...string) *GeoIP {
-
 	if len(files) == 0 {
 		files = []string{
 			"/usr/share/GeoIP/GeoIP.dat",       // Linux default
@@ -47,6 +47,15 @@ func Open(files ...string) *GeoIP {
 	var err error
 
 	for _, file := range files {
+
+		// libgeoip prints errors if it can't open the file, so check first
+		if _, err := os.Stat(file); err != nil {
+			if os.IsExist(err) {
+				log.Println(err)
+			}
+			continue
+		}
+
 		cbase := C.CString(file)
 		g.db, err = C.GeoIP_open(cbase, C.GEOIP_MEMORY_CACHE)
 		C.free(unsafe.Pointer(cbase))

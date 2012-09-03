@@ -2,8 +2,8 @@
 package geoip
 
 /*
-#cgo CFLAGS: -I/opt/local/include -L/opt/local/lib
-#cgo LDFLAGS: -lGeoIP -L/opt/local/lib
+#cgo CFLAGS: -I/opt/local/include -I/usr/local/include
+#cgo LDFLAGS: -lGeoIP -L/opt/local/lib -L/usr/local/lib
 #include <stdio.h>
 #include <errno.h>
 #include <GeoIP.h>
@@ -35,9 +35,10 @@ func Open(files ...string) *GeoIP {
 
 	if len(files) == 0 {
 		files = []string{
-			"/usr/share/GeoIP/GeoIP.dat",
-			"/usr/share/local/GeoIP/GeoIP.dat",
-			"/opt/local/share/GeoIP/GeoIP.dat",
+			"/usr/share/GeoIP/GeoIP.dat",       // Linux default
+			"/usr/share/local/GeoIP/GeoIP.dat", // source install?
+			"/usr/local/share/GeoIP/GeoIP.dat", // FreeBSD
+			"/opt/local/share/GeoIP/GeoIP.dat", // MacPorts
 		}
 	}
 

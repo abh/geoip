@@ -75,6 +75,8 @@ func Open(files ...string) *GeoIP {
 	return nil
 }
 
+// GetOrg takes an IPv4 address string and returns the org name for that IP.
+// Requires the geoip org database
 func (gi *GeoIP) GetOrg(ip string) string {
 	if gi.db == nil {
 		return ""

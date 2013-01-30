@@ -25,9 +25,9 @@ Country](http://www.maxmind.com/app/geoip_country) database or you can
 		country := gi.GetCountry("207.171.7.51")
 	}
 
-	// Setup gi6 by opening the optional IPv6 database and then:	
+	// Setup gi6 by opening the optional IPv6 database and then:
 	country := gi6.GetCountry_v6("2607:f238:2::5")
-	display(country)
+	fmt.Println(country)
 
 
 ## Contact

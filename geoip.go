@@ -75,6 +75,22 @@ func Open(files ...string) *GeoIP {
 	return nil
 }
 
+// GetOrg takes an IPv4 address string and returns the org name for that IP.
+// Requires the geoip org database
+func (gi *GeoIP) GetOrg(ip string) string {
+	if gi.db == nil {
+		return ""
+	}
+	cip := C.CString(ip)
+	cname := C.GeoIP_name_by_addr(gi.db, cip)
+	C.free(unsafe.Pointer(cip))
+	if cname != nil {
+		rets := C.GoString(cname)
+		return rets
+	}
+	return ""
+}
+
 // GetCountry takes an IPv4 address string and returns the country code for that IP.
 func (gi *GeoIP) GetCountry(ip string) string {
 	if gi.db == nil {

@@ -15,6 +15,7 @@ import "C"
 import (
 	"log"
 	"os"
+	"runtime"
 	"unsafe"
 )
 
@@ -24,6 +25,19 @@ var Quiet bool = false
 
 type GeoIP struct {
 	db *C.GeoIP
+}
+
+func (gi *GeoIP) Free() {
+	if gi == nil {
+		return
+	}
+	if gi.db == nil {
+		gi = nil
+		return
+	}
+	C.GeoIP_delete(gi.db)
+	gi = nil
+	return
 }
 
 // Open opens a GeoIP database, all formats supported by libgeoip are supported though
@@ -44,6 +58,7 @@ func Open(files ...string) *GeoIP {
 	}
 
 	g := &GeoIP{}
+	runtime.SetFinalizer(g, (*GeoIP).Free)
 
 	var err error
 

@@ -19,9 +19,9 @@ import (
 	"unsafe"
 )
 
-// Set Quiet to true to silence warnings when the database can't be opened
+// Set Verbose to false to silence warnings when the database can't be opened
 // (though libgeoip still prints to errout)
-var Quiet bool = false
+var Verbose bool = true
 
 type GeoIP struct {
 	db *C.GeoIP
@@ -79,7 +79,7 @@ func Open(files ...string) *GeoIP {
 			break
 		}
 	}
-	if err != nil && !Quiet {
+	if err != nil && Verbose {
 		log.Println("Error opening GeoIP database", files, err)
 	}
 

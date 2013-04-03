@@ -26,7 +26,7 @@ func (s *GeoIPSuite) Testv4(c *C) {
 	c.Check(country, Equals, "US")
 	c.Check(netmask, Equals, 15)
 
-	country, netmask = gi.GetCountry("64.235.248.1")
+	country, netmask = gi.GetCountry("149.20.64.42")
 	c.Check(country, Equals, "US")
-	c.Check(netmask, Equals, 20)
+	c.Check(netmask, Equals, 13)
 }

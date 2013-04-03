@@ -120,7 +120,7 @@ func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 }
 
 // Same as GetName() but for IPv6 addresses.
-func (gi *GeoIP) GetNameV6(ip string) (name string) {
+func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 	if gi.db == nil {
 		return
 	}
@@ -132,6 +132,7 @@ func (gi *GeoIP) GetNameV6(ip string) (name string) {
 	if cname != nil {
 		name = C.GoString(cname)
 		defer C.free(unsafe.Pointer(cname))
+		netmask = int(C.GeoIP_last_netmask(gi.db))
 		return
 	}
 	return
@@ -160,9 +161,8 @@ func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 }
 
 // GetCountry_v6 works the same as GetCountry except for IPv6 addresses, be sure to
-// load a database with IPv6 data to get any results. Getting the netmask for IPv6
-// addresses is not supported by the geoip library.
-func (gi *GeoIP) GetCountry_v6(ip string) (cc string) {
+// load a database with IPv6 data to get any results.
+func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	if gi.db == nil {
 		return
 	}
@@ -172,6 +172,7 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string) {
 	ccountry := C.GeoIP_country_code_by_addr_v6(gi.db, cip)
 	if ccountry != nil {
 		cc = C.GoString(ccountry)
+		netmask = int(C.GeoIP_last_netmask(gi.db))
 		return
 	}
 	return

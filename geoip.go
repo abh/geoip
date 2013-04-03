@@ -17,11 +17,13 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"sync"
 	"unsafe"
 )
 
 type GeoIP struct {
 	db *C.GeoIP
+	mu sync.Mutex
 }
 
 func (gi *GeoIP) Free() {
@@ -105,33 +107,43 @@ func (gi *GeoIP) GetOrg(ip string) string {
 	return ""
 }
 
-// GetCountry takes an IPv4 address string and returns the country code for that IP.
-func (gi *GeoIP) GetCountry(ip string) string {
+// GetCountry takes an IPv4 address string and returns the country code for that IP
+// and the netmask for that IP range.
+func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 	if gi.db == nil {
-		return ""
+		return
 	}
+
+	gi.mu.Lock() // Lock to make sure we get the right result from GeoIP_last_netmask
+	defer gi.mu.Unlock()
+
 	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
 	ccountry := C.GeoIP_country_code_by_addr(gi.db, cip)
-	C.free(unsafe.Pointer(cip))
+
 	if ccountry != nil {
-		rets := C.GoString(ccountry)
-		return rets
+		cc = C.GoString(ccountry)
+		netmask = int(C.GeoIP_last_netmask(gi.db))
+		return
 	}
-	return ""
+	return
 }
 
 // GetCountry_v6 works the same as GetCountry except for IPv6 addresses, be sure to
-// load a database with IPv6 data to get any results.
-func (gi *GeoIP) GetCountry_v6(ip string) string {
+// load a database with IPv6 data to get any results. Getting the netmask for IPv6
+// addresses is not supported by the geoip library.
+func (gi *GeoIP) GetCountry_v6(ip string) (cc string) {
 	if gi.db == nil {
-		return ""
+		return
 	}
+
 	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
 	ccountry := C.GeoIP_country_code_by_addr_v6(gi.db, cip)
 	C.free(unsafe.Pointer(cip))
 	if ccountry != nil {
-		rets := C.GoString(ccountry)
-		return rets
+		cc = C.GoString(ccountry)
+		return
 	}
-	return ""
+	return
 }

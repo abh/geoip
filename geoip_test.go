@@ -22,6 +22,11 @@ func (s *GeoIPSuite) Testv4(c *C) {
 
 	c.Check(gi, NotNil)
 
-	country := gi.GetCountry("207.171.7.51")
+	country, netmask := gi.GetCountry("207.171.7.51")
 	c.Check(country, Equals, "US")
+	c.Check(netmask, Equals, 15)
+
+	country, netmask = gi.GetCountry("64.235.248.1")
+	c.Check(country, Equals, "US")
+	c.Check(netmask, Equals, 20)
 }

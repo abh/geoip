@@ -140,7 +140,6 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string) {
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
 	ccountry := C.GeoIP_country_code_by_addr_v6(gi.db, cip)
-	C.free(unsafe.Pointer(cip))
 	if ccountry != nil {
 		cc = C.GoString(ccountry)
 		return

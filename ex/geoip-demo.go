@@ -25,8 +25,8 @@ func main() {
 	}
 	if gi6 != nil {
 		ip := "2607:f238:2::5"
-		country, netmask := gi6.GetCountry_v6(ip)
-		fmt.Printf("%s: [%s]/%d\n", ip, country, netmask)
+		country := gi6.GetCountry_v6(ip)
+		fmt.Printf("%s: [%s]\n", ip, country)
 
 	}
 

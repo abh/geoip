@@ -26,7 +26,7 @@ type GeoIP struct {
 	mu sync.Mutex
 }
 
-func (gi *GeoIP) Free() {
+func (gi *GeoIP) free() {
 	if gi == nil {
 		return
 	}
@@ -57,7 +57,7 @@ func Open(files ...string) (*GeoIP, error) {
 	}
 
 	g := &GeoIP{}
-	runtime.SetFinalizer(g, (*GeoIP).Free)
+	runtime.SetFinalizer(g, (*GeoIP).free)
 
 	var err error
 

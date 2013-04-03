@@ -32,5 +32,6 @@ Country](http://www.maxmind.com/app/geoip_country) database or you can
 
 ## Contact
 
-Ask Bjørn Hansen <ask@develooper.com>. The package MIT licensed, see the
-LICENSE file. Originally based on an example from blasux@blasux.ru.
+Copyright 2012-2013 Ask Bjørn Hansen <ask@develooper.com>. The package
+is MIT licensed, see the LICENSE file. Originally based on example code
+from blasux@blasux.ru.

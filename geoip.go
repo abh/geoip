@@ -13,15 +13,12 @@ package geoip
 import "C"
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"runtime"
 	"unsafe"
 )
-
-// Set Verbose to false to silence warnings when the database can't be opened
-// (though libgeoip still prints to errout)
-var Verbose bool = true
 
 type GeoIP struct {
 	db *C.GeoIP
@@ -46,7 +43,7 @@ func (gi *GeoIP) Free() {
 // instead of performance you should change this.
 // If you don't pass a filename, it will try opening the database from
 // a list of common paths.
-func Open(files ...string) *GeoIP {
+func Open(files ...string) (*GeoIP, error) {
 	if len(files) == 0 {
 		files = []string{
 			"/usr/share/GeoIP/GeoIP.dat",       // Linux default
@@ -73,22 +70,23 @@ func Open(files ...string) *GeoIP {
 		}
 
 		cbase := C.CString(file)
+		defer C.free(unsafe.Pointer(cbase))
+
 		g.db, err = C.GeoIP_open(cbase, C.GEOIP_MEMORY_CACHE)
-		C.free(unsafe.Pointer(cbase))
 		if g.db != nil && err != nil {
 			break
 		}
 	}
-	if err != nil && Verbose {
-		log.Println("Error opening GeoIP database", files, err)
+	if err != nil {
+		return nil, fmt.Errorf("Error opening GeoIP database (%s): %s", files, err)
 	}
 
-	if g.db != nil {
-		C.GeoIP_set_charset(g.db, C.GEOIP_CHARSET_UTF8)
-		return g
+	if g.db == nil {
+		return nil, fmt.Errorf("Didn't open GeoIP database (%s)", files)
 	}
 
-	return nil
+	C.GeoIP_set_charset(g.db, C.GEOIP_CHARSET_UTF8)
+	return g, nil
 }
 
 // GetOrg takes an IPv4 address string and returns the org name for that IP.
@@ -98,8 +96,8 @@ func (gi *GeoIP) GetOrg(ip string) string {
 		return ""
 	}
 	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
 	cname := C.GeoIP_name_by_addr(gi.db, cip)
-	C.free(unsafe.Pointer(cip))
 	if cname != nil {
 		rets := C.GoString(cname)
 		return rets

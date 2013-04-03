@@ -39,8 +39,8 @@ func (gi *GeoIP) free() {
 	return
 }
 
-// Open opens a GeoIP database, all formats supported by libgeoip are supported though
-// there are only functions to access the country information in this API.
+// Opens a GeoIP database, all formats supported by libgeoip are supported though
+// there are only functions to access some of the databases in this API.
 // The database is opened in MEMORY_CACHE mode, if you need to optimize for memory
 // instead of performance you should change this.
 // If you don't pass a filename, it will try opening the database from
@@ -91,23 +91,50 @@ func Open(files ...string) (*GeoIP, error) {
 	return g, nil
 }
 
-// GetOrg takes an IPv4 address string and returns the org name for that IP.
-// Requires the geoip org database
+// Takes an IPv4 address string and returns the organization name for that IP.
+// Requires the GeoIP organization database.
 func (gi *GeoIP) GetOrg(ip string) string {
+	return gi.GetName(ip)
+}
+
+// Works on the ASN, Netspeed, Organization and probably other
+// databases, takes and IP string and returns a "name".
+func (gi *GeoIP) GetName(ip string) (name string) {
 	if gi.db == nil {
-		return ""
+		return
 	}
+
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
 	cname := C.GeoIP_name_by_addr(gi.db, cip)
+
 	if cname != nil {
-		rets := C.GoString(cname)
-		return rets
+		name = C.GoString(cname)
+		defer C.free(unsafe.Pointer(cname))
+		return
 	}
-	return ""
+	return
 }
 
-// GetCountry takes an IPv4 address string and returns the country code for that IP
+// Same as GetName() but for IPv6 addresses.
+func (gi *GeoIP) GetNameV6(ip string) (name string) {
+	if gi.db == nil {
+		return
+	}
+
+	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
+	cname := C.GeoIP_name_by_addr_v6(gi.db, cip)
+
+	if cname != nil {
+		name = C.GoString(cname)
+		defer C.free(unsafe.Pointer(cname))
+		return
+	}
+	return
+}
+
+// Takes an IPv4 address string and returns the country code for that IP
 // and the netmask for that IP range.
 func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 	if gi.db == nil {

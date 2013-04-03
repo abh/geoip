@@ -19,6 +19,23 @@ func main() {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 	}
 
+	giasn, err := geoip.Open("../db/GeoIPASNum.dat")
+	if err != nil {
+		fmt.Printf("Could not open GeoIPASN database: %s\n", err)
+	}
+
+	giasn6, err := geoip.Open("../db/GeoIPASNumv6.dat")
+	if err != nil {
+		fmt.Printf("Could not open GeoIPASN database: %s\n", err)
+	}
+
+	if giasn != nil {
+		ip := "207.171.7.51"
+		asn := giasn.GetName(ip)
+		fmt.Printf("%s: %s\n", ip, asn)
+
+	}
+
 	if gi != nil {
 		test4(*gi, "207.171.7.51")
 		test4(*gi, "127.0.0.1")
@@ -26,7 +43,11 @@ func main() {
 	if gi6 != nil {
 		ip := "2607:f238:2::5"
 		country := gi6.GetCountry_v6(ip)
-		fmt.Printf("%s: [%s]\n", ip, country)
+		var asn string
+		if giasn6 != nil {
+			asn = giasn6.GetNameV6(ip)
+		}
+		fmt.Printf("%s: %s %s\n", ip, country, asn)
 
 	}
 

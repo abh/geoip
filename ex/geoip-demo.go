@@ -31,8 +31,8 @@ func main() {
 
 	if giasn != nil {
 		ip := "207.171.7.51"
-		asn := giasn.GetName(ip)
-		fmt.Printf("%s: %s\n", ip, asn)
+		asn, netmask := giasn.GetName(ip)
+		fmt.Printf("%s: %s (netmask /%d)\n", ip, asn, netmask)
 
 	}
 

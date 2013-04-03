@@ -94,12 +94,14 @@ func Open(files ...string) (*GeoIP, error) {
 // Takes an IPv4 address string and returns the organization name for that IP.
 // Requires the GeoIP organization database.
 func (gi *GeoIP) GetOrg(ip string) string {
-	return gi.GetName(ip)
+	name, _ := gi.GetName(ip)
+	return name
 }
 
 // Works on the ASN, Netspeed, Organization and probably other
-// databases, takes and IP string and returns a "name".
-func (gi *GeoIP) GetName(ip string) (name string) {
+// databases, takes and IP string and returns a "name" and the
+// netmask.
+func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 	if gi.db == nil {
 		return
 	}
@@ -111,6 +113,7 @@ func (gi *GeoIP) GetName(ip string) (name string) {
 	if cname != nil {
 		name = C.GoString(cname)
 		defer C.free(unsafe.Pointer(cname))
+		netmask = int(C.GeoIP_last_netmask(gi.db))
 		return
 	}
 	return

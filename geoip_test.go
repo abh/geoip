@@ -32,6 +32,18 @@ func (s *GeoIPSuite) Testv4(c *C) {
 	c.Check(netmask, Equals, 13)
 }
 
+func (s *GeoIPSuite) Benchmark_GetCountry(c *C) {
+	gi, err := Open()
+	if gi == nil || err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+		return
+	}
+
+	for i := 0; i < c.N; i++ {
+		gi.GetCountry("207.171.7.51")
+	}
+}
+
 func (s *GeoIPSuite) Testv4Record(c *C) {
 	gi, err := Open("db/GeoLiteCity.dat")
 	if gi == nil || err != nil {

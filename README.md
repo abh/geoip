@@ -3,8 +3,8 @@
 This package wraps the [libgeoip C library](http://www.maxmind.com/app/c) for
 access from Go (golang). [![Build Status](https://travis-ci.org/abh/geoip.png?branch=master)](https://travis-ci.org/abh/geoip)
 
-Install with `go get https://github.com/abh/geoip` and use `godoc
-geoip` to read the documentation.
+Install with `go get https://github.com/abh/geoip` and use [godoc
+geoip](http://godoc.org/github.com/abh/geoip) to read the documentation.
 
 There's a small example in the `ex/` subdirectory.
 

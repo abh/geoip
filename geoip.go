@@ -120,24 +120,6 @@ func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 	return
 }
 
-func (gi *GeoIP) GetDescription(ip string) (name string, netmask int) {
-	if gi.db == nil {
-		return
-	}
-
-	cip := C.CString(ip)
-	defer C.free(unsafe.Pointer(cip))
-	cname := C.GeoIP_name_by_addr(gi.db, cip)
-
-	if cname != nil {
-		name = C.GoString(cname)
-		defer C.free(unsafe.Pointer(cname))
-		netmask = int(C.GeoIP_last_netmask(gi.db))
-		return
-	}
-	return
-}
-
 type GeoIPRecord struct {
 	CountryCode  string
 	CountryCode3 string

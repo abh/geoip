@@ -184,6 +184,27 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	return rec
 }
 
+// Returns the country code and region code for an IP address. Requires
+// the GeoIP Region database (untested)
+func (gi *GeoIP) GetRegion(ip string) (string, string) {
+	if gi.db == nil {
+		return "", ""
+	}
+
+	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
+	region := C.GeoIP_region_by_addr(gi.db, cip)
+	if region == nil {
+		return "", ""
+	}
+
+	countryCode := C.GoString(&region.country_code[0])
+	regionCode := C.GoString(&region.region[0])
+	defer C.free(unsafe.Pointer(region))
+
+	return countryCode, regionCode
+}
+
 // Same as GetName() but for IPv6 addresses.
 func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 	if gi.db == nil {

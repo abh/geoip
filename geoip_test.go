@@ -60,3 +60,16 @@ func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 		}
 	}
 }
+
+func (s *GeoIPSuite) Testv4Region(c *C) {
+	gi, err := Open("db/GeoIPCity.dat")
+	if gi == nil || err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+	}
+
+	c.Check(gi, NotNil)
+
+	_, region := gi.GetRegion("207.171.7.51")
+	c.Check(region, NotNil)
+
+}

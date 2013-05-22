@@ -33,7 +33,7 @@ func (s *GeoIPSuite) Testv4(c *C) {
 }
 
 func (s *GeoIPSuite) Testv4Record(c *C) {
-	gi, err := Open("db/GeoIPCity.dat")
+	gi, err := Open("db/GeoLiteCity.dat")
 	if gi == nil || err != nil {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 		return
@@ -65,7 +65,7 @@ func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 }
 
 func (s *GeoIPSuite) Testv4Region(c *C) {
-	gi, err := Open("db/GeoIPCity.dat")
+	gi, err := Open("db/GeoIPRegion.dat")
 	if gi == nil || err != nil {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 		return

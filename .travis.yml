@@ -2,9 +2,8 @@ language: go
 before_install:
   - sudo apt-get install libgeoip-dev bzr
 install:
-  - mkdir db
-  - curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz  | gzip -cd > db/GeoLiteCity.dat
+  - mkdir -p $TRAVIS_BUILD_DIR/db
+  - curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz  | gzip -cd > $TRAVIS_BUILD_DIR/db/GeoLiteCity.dat
   - go get launchpad.net/gocheck
-  - go build -v
 script:
-  - go test -gocheck.v
+  - cd $TRAVIS_BUILD_DIR && go test -gocheck.v

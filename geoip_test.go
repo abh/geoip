@@ -30,3 +30,33 @@ func (s *GeoIPSuite) Testv4(c *C) {
 	c.Check(country, Equals, "US")
 	c.Check(netmask, Equals, 13)
 }
+
+func (s *GeoIPSuite) Testv4Record(c *C) {
+	gi, err := Open("db/GeoIPCity.dat")
+	if gi == nil || err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+	}
+
+	c.Check(gi, NotNil)
+
+	record := gi.GetRecord("207.171.7.51")
+	c.Assert(record, NotNil)
+	c.Check(record.CountryCode, Equals, "US")
+	fmt.Printf("Record: %#v\n", record)
+
+}
+
+func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
+
+	gi, err := Open("db/GeoIPCity.dat")
+	if gi == nil || err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+	}
+
+	for i := 0; i < c.N; i++ {
+		record := gi.GetRecord("207.171.7.51")
+		if record == nil {
+			panic("")
+		}
+	}
+}

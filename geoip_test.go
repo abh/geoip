@@ -83,7 +83,7 @@ func (s *GeoIPSuite) Testv4Region(c *C) {
 		return
 	}
 
-	_, region := gi.GetRegion("207.171.7.51")
-	c.Check(region, NotNil)
-
+	country, region := gi.GetRegion("207.171.7.51")
+	c.Check(country, Equals, "US")
+	c.Check(region, Equals, "CA")
 }

@@ -167,7 +167,7 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 }
 
 // Returns the country code and region code for an IP address. Requires
-// the GeoIP Region database (untested)
+// the GeoIP Region database.
 func (gi *GeoIP) GetRegion(ip string) (string, string) {
 	if gi.db == nil {
 		return "", ""

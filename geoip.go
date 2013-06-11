@@ -40,8 +40,8 @@ func (gi *GeoIP) free() {
 	return
 }
 
-// Opens a GeoIP database, all formats supported by libgeoip are supported though
-// there are only functions to access some of the databases in this API.
+// Opens a GeoIP database by filename, all formats supported by libgeoip are
+// supported though there are only functions to access some of the databases in this API.
 // The database is opened in MEMORY_CACHE mode, if you need to optimize for memory
 // instead of performance you should change this.
 // If you don't pass a filename, it will try opening the database from
@@ -89,6 +89,26 @@ func Open(files ...string) (*GeoIP, error) {
 	}
 
 	C.GeoIP_set_charset(g.db, C.GEOIP_CHARSET_UTF8)
+	return g, nil
+}
+
+// OpenType opens a specified GeoIP database type in the default location. Constants
+// are defined for each database type (for example GEOIP_COUNTRY_EDITION).
+func OpenType(dbType int) (*GeoIP, error) {
+	g := &GeoIP{}
+	runtime.SetFinalizer(g, (*GeoIP).free)
+
+	var err error
+
+	g.db, err = C.GeoIP_open_type(C.int(dbType), C.GEOIP_MEMORY_CACHE)
+	if err != nil {
+		return nil, fmt.Errorf("Error opening GeoIP database (%d): %s", dbType, err)
+	}
+
+	if g.db == nil {
+		return nil, fmt.Errorf("Didn't open GeoIP database (%d)", dbType)
+	}
+
 	return g, nil
 }
 

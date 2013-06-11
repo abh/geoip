@@ -32,6 +32,15 @@ func (s *GeoIPSuite) Testv4(c *C) {
 	c.Check(netmask, Equals, 13)
 }
 
+func (s *GeoIPSuite) TestOpenType(c *C) {
+	// Open Country database
+	gi, err := OpenType(GEOIP_COUNTRY_EDITION)
+	c.Check(err, IsNil)
+	c.Assert(gi, NotNil)
+	country, _ := gi.GetCountry("207.171.7.51")
+	c.Check(country, Equals, "US")
+}
+
 func (s *GeoIPSuite) Benchmark_GetCountry(c *C) {
 	gi, err := Open()
 	if gi == nil || err != nil {

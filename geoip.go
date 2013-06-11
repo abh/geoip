@@ -109,6 +109,8 @@ func OpenType(dbType int) (*GeoIP, error) {
 		return nil, fmt.Errorf("Didn't open GeoIP database (%d)", dbType)
 	}
 
+	C.GeoIP_set_charset(g.db, C.GEOIP_CHARSET_UTF8)
+
 	return g, nil
 }
 

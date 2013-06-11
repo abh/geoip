@@ -33,6 +33,9 @@ func (s *GeoIPSuite) Testv4(c *C) {
 }
 
 func (s *GeoIPSuite) TestOpenType(c *C) {
+
+	// SetCustomDirectory("/Users/ask/go/src/geoip/db")
+
 	// Open Country database
 	gi, err := OpenType(GEOIP_COUNTRY_EDITION)
 	c.Check(err, IsNil)

@@ -92,6 +92,14 @@ func Open(files ...string) (*GeoIP, error) {
 	return g, nil
 }
 
+// SetCustomDirectory sets the default location for the GeoIP .dat files used when
+// calling OpenType()
+func SetCustomDirectory(dir string) {
+	cdir := C.CString(dir)
+	defer C.free(unsafe.Pointer(cdir))
+	C.GeoIP_setup_custom_directory(cdir)
+}
+
 // OpenType opens a specified GeoIP database type in the default location. Constants
 // are defined for each database type (for example GEOIP_COUNTRY_EDITION).
 func OpenType(dbType int) (*GeoIP, error) {

@@ -3,7 +3,7 @@ before_install:
   - sudo apt-get install libgeoip-dev bzr
 install:
   - mkdir -p $TRAVIS_BUILD_DIR/db
-  - curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz  | gzip -cd > $TRAVIS_BUILD_DIR/db/GeoLiteCity.dat
+  - curl http://geodns.bitnames.com/geoip/GeoLiteCity.dat.gz  | gzip -cd > $TRAVIS_BUILD_DIR/db/GeoLiteCity.dat
   - go get launchpad.net/gocheck
 script:
   - cd $TRAVIS_BUILD_DIR && go test -gocheck.v

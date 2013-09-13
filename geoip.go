@@ -137,6 +137,9 @@ func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 		return
 	}
 
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
+
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
 	cname := C.GeoIP_name_by_addr(gi.db, cip)
@@ -223,6 +226,9 @@ func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 		return
 	}
 
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
+
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
 	cname := C.GeoIP_name_by_addr_v6(gi.db, cip)
@@ -264,6 +270,9 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	if gi.db == nil {
 		return
 	}
+
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
 
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))

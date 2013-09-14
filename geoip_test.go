@@ -99,3 +99,10 @@ func (s *GeoIPSuite) Testv4Region(c *C) {
 	c.Check(country, Equals, "US")
 	c.Check(region, Equals, "CA")
 }
+
+func (s *GeoIPSuite) TestRegionName(c *C) {
+	regionName := GetRegionName("NL", "07")
+	c.Check(regionName, Equals, "Noord-Holland")
+	regionName = GetRegionName("CA", "ON")
+	c.Check(regionName, Equals, "Ontario")
+}

@@ -96,7 +96,8 @@ func Open(files ...string) (*GeoIP, error) {
 // calling OpenType()
 func SetCustomDirectory(dir string) {
 	cdir := C.CString(dir)
-	defer C.free(unsafe.Pointer(cdir))
+	// GeoIP doesn't copy the string, so don't free it when we're done here.
+	// defer C.free(unsafe.Pointer(cdir))
 	C.GeoIP_setup_custom_directory(cdir)
 }
 

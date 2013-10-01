@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 use strict;
-use v5.14.0;
+use v5.12.0;
 use LWP::Simple qw(mirror);
 use File::Basename qw(basename);
 

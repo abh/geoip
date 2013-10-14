@@ -24,6 +24,12 @@ import (
 
 type GeoIP struct {
 	db *C.GeoIP
+
+	// We don't use GeoIP's thread-safe API calls, which means there is a
+	// single global netmask variable that gets clobbered in the main
+	// lookup routine.  Any calls which have _GeoIP_seek_record_gl need to
+	// be wrapped in this mutex.
+
 	mu sync.Mutex
 }
 
@@ -210,8 +216,6 @@ func (gi *GeoIP) GetRegion(ip string) (string, string) {
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
 
-	// Even though we don't query the netmask here, this routine clobbers
-	// our global netmask and so still needs to be enclosed in the mutex
 	gi.mu.Lock()
 	region := C.GeoIP_region_by_addr(gi.db, cip)
 	gi.mu.Unlock()
@@ -276,7 +280,7 @@ func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 		return
 	}
 
-	gi.mu.Lock() // Lock to make sure we get the right result from GeoIP_last_netmask
+	gi.mu.Lock()
 	defer gi.mu.Unlock()
 
 	cip := C.CString(ip)

@@ -209,7 +209,13 @@ func (gi *GeoIP) GetRegion(ip string) (string, string) {
 
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
+
+	// Even though we don't query the netmask here, this routine clobbers
+	// our global netmask and so still needs to be enclosed in the mutex
+	gi.mu.Lock()
 	region := C.GeoIP_region_by_addr(gi.db, cip)
+	gi.mu.Unlock()
+
 	if region == nil {
 		return "", ""
 	}

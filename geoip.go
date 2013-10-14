@@ -184,7 +184,11 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
+
+	gi.mu.Lock()
 	record := C.GeoIP_record_by_addr(gi.db, cip)
+	gi.mu.Unlock()
+
 	if record == nil {
 		return nil
 	}

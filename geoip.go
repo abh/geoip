@@ -305,3 +305,23 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	}
 	return
 }
+
+func (gi *GeoIP) GetContinent(ip string) string {
+    if gi.db == nil {
+		return ""
+	}
+
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
+
+    cip := C.CString(ip)
+    defer C.free(unsafe.Pointer(cip))
+
+    ccountryID, err := C.GeoIP_id_by_addr(gi.db, cip)
+    if err != nil {
+        return ""
+    }
+
+    ccontinent := C.GeoIP_continent_by_id(ccountryID)
+    return C.GoString(ccontinent)
+}

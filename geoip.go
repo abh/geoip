@@ -306,22 +306,33 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	return
 }
 
-func (gi *GeoIP) GetContinent(ip string) string {
-    if gi.db == nil {
-		return ""
+func (gi *GeoIP) GetContinent(ip string) (ccontinent, ccountry string, netmask int) {
+	if gi.db == nil {
+		return
 	}
 
 	gi.mu.Lock()
 	defer gi.mu.Unlock()
 
-    cip := C.CString(ip)
-    defer C.free(unsafe.Pointer(cip))
+	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
 
-    ccountryID, err := C.GeoIP_id_by_addr(gi.db, cip)
-    if err != nil {
-        return ""
-    }
+	// First determine country ID and country string
+	ccountryID, err := C.GeoIP_id_by_addr(gi.db, cip)
+	if err != nil {
+		return
+	}
+	ccountryName, err := C.GeoIP_country_name_by_id(gi.db, ccountryID)
+	if err != nil {
+		return
+	}
+	ccountry = C.GoString(ccountryName)
 
-    ccontinent := C.GeoIP_continent_by_id(ccountryID)
-    return C.GoString(ccontinent)
+	// This is a simple static lookup of the continent from the ID
+	ccontinentName := C.GeoIP_continent_by_id(ccountryID)
+	ccontinent = C.GoString(ccontinentName)
+
+	// Also return the netmask for convenience
+	netmask = int(C.GeoIP_last_netmask(gi.db))
+	return
 }

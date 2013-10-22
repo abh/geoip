@@ -161,15 +161,15 @@ func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 }
 
 type GeoIPRecord struct {
-	CountryCode  string
-	CountryCode3 string
-	CountryName  string
-	Region       string
-	City         string
-	PostalCode   string
-	Latitude     float32
-	Longitude    float32
-	// DMACode       int
+	CountryCode   string
+	CountryCode3  string
+	CountryName   string
+	Region        string
+	City          string
+	PostalCode    string
+	Latitude      float32
+	Longitude     float32
+	MetroCode     int
 	AreaCode      int
 	CharSet       int
 	ContinentCode string
@@ -203,9 +203,18 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	rec.PostalCode = C.GoString(record.postal_code)
 	rec.Latitude = float32(record.latitude)
 	rec.Longitude = float32(record.longitude)
-	rec.AreaCode = int(record.area_code)
 	rec.CharSet = int(record.charset)
 	rec.ContinentCode = C.GoString(record.continent_code)
+
+	if gi.db.databaseType != C.GEOIP_CITY_EDITION_REV0 {
+		/* DIRTY HACK BELOW: 
+		   The GeoIPRecord struct in GeoIPCity.h contains an int32 union of metro_code and dma_code.
+		   The union is unnamed, so cgo names it anon0 and assumes it's a 4-byte array.
+		*/
+		union_int := (*int32)(unsafe.Pointer(&record.anon0))
+		rec.MetroCode = int(*union_int)
+		rec.AreaCode = int(record.area_code)
+	}
 
 	return rec
 }

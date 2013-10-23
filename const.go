@@ -1,5 +1,6 @@
 package geoip
 
+// GeoIPDBTypes enum in GeoIP.h
 const (
 	GEOIP_COUNTRY_EDITION            = 1
 	GEOIP_REGION_EDITION_REV0        = 7
@@ -32,4 +33,13 @@ const (
 	GEOIP_CITY_EDITION_REV0_V6       = 31
 	GEOIP_NETSPEED_EDITION_REV1      = 32
 	GEOIP_NETSPEED_EDITION_REV1_V6   = 33
+)
+
+// GeoIPOptions enum in GeoIP.h
+const (
+	GEOIP_STANDARD     = 0
+	GEOIP_MEMORY_CACHE = 1
+	GEOIP_CHECK_CACHE  = 2
+	GEOIP_INDEX_CACHE  = 4
+	GEOIP_MMAP_CACHE   = 8
 )

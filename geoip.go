@@ -319,3 +319,12 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	}
 	return
 }
+
+func TimeZoneByCountryAndRegion(country string, region string) string {
+	cc := C.CString(country)
+	defer C.free(unsafe.Pointer(cc))
+	cr := C.CString(region)
+	defer C.free(unsafe.Pointer(cr))
+	tz := C.GeoIP_time_zone_by_country_and_region(cc, cr)
+	return C.GoString(tz)
+}

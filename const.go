@@ -1,5 +1,6 @@
 package geoip
 
+// Constants from from GeoIP.h (as per 1.4.8)
 const (
 	GEOIP_COUNTRY_EDITION            = 1
 	GEOIP_REGION_EDITION_REV0        = 7

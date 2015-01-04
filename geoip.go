@@ -149,6 +149,9 @@ func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
+
+	// GEOIP_LOCATIONA_EDITION_V6 == i || GEOIP_ASNUM_EDITION_V6 == i || GEOIP_USERTYPE_EDITION_V6 == i || GEOIP_REGISTRAR_EDITION_V6 == i || GEOIP_DOMAIN_EDITION_V6 == i || GEOIP_ORG_EDITION_V6 == i || GEOIP_ISP_EDITION_V6 == i || GEOIP_NETSPEED_EDITION_REV1_V6 == i
+
 	cname := C.GeoIP_name_by_addr(gi.db, cip)
 
 	if cname != nil {
@@ -185,14 +188,22 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
 
+	var record *_Ctype_struct_GeoIPRecordTag
+
 	gi.mu.Lock()
-	record := C.GeoIP_record_by_addr(gi.db, cip)
+
+	switch gi.db.databaseType {
+	case GEOIP_CITY_EDITION_REV1_V6, GEOIP_CITY_EDITION_REV0_V6:
+		record = C.GeoIP_record_by_addr_v6(gi.db, cip)
+	default:
+		record = C.GeoIP_record_by_addr(gi.db, cip)
+	}
+
 	gi.mu.Unlock()
 
 	if record == nil {
 		return nil
 	}
-	// defer C.free(unsafe.Pointer(record))
 	defer C.GeoIPRecord_delete(record)
 	rec := new(GeoIPRecord)
 	rec.CountryCode = C.GoString(record.country_code)
@@ -278,7 +289,8 @@ func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 }
 
 // Takes an IPv4 address string and returns the country code for that IP
-// and the netmask for that IP range.
+// and the netmask for that IP range. If the database is an IPv6 database
+// it will use the appropriate libgeoip function.
 func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 	if gi.db == nil {
 		return
@@ -289,7 +301,15 @@ func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
-	ccountry := C.GeoIP_country_code_by_addr(gi.db, cip)
+
+	var ccountry *C.char
+
+	switch gi.db.databaseType {
+	case GEOIP_COUNTRY_EDITION_V6, GEOIP_LARGE_COUNTRY_EDITION_V6:
+		ccountry = C.GeoIP_country_code_by_addr_v6(gi.db, cip)
+	default:
+		ccountry = C.GeoIP_country_code_by_addr(gi.db, cip)
+	}
 
 	if ccountry != nil {
 		cc = C.GoString(ccountry)
@@ -300,7 +320,8 @@ func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 }
 
 // GetCountry_v6 works the same as GetCountry except for IPv6 addresses, be sure to
-// load a database with IPv6 data to get any results.
+// load a database with IPv6 data to get any results. (This is hopefully obsolete as
+// the GetCountry() function should now do the right thing).
 func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	if gi.db == nil {
 		return

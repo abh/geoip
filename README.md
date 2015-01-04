@@ -26,12 +26,12 @@ Country](http://www.maxmind.com/app/geoip_country) database or you can
 	}
 
 	// Setup gi6 by opening the optional IPv6 database and then...
-	country := gi6.GetCountry_v6("2607:f238:2::5")
+	country := gi6.GetCountry("2607:f238:2::5")
 	fmt.Println(country)
 
 
 ## Contact
 
-Copyright 2012-2013 Ask Bjørn Hansen <ask@develooper.com>. The package
+Copyright 2012-2015 Ask Bjørn Hansen <ask@develooper.com>. The package
 is MIT licensed, see the LICENSE file. Originally based on example code
 from blasux@blasux.ru.

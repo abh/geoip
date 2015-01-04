@@ -2,8 +2,9 @@ package geoip
 
 import (
 	"fmt"
-	. "launchpad.net/gocheck"
 	"testing"
+
+	. "gopkg.in/check.v1"
 )
 
 // Hook up gocheck into the gotest runner.

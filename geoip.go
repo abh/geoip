@@ -150,9 +150,19 @@ func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 	cip := C.CString(ip)
 	defer C.free(unsafe.Pointer(cip))
 
-	// GEOIP_LOCATIONA_EDITION_V6 == i || GEOIP_ASNUM_EDITION_V6 == i || GEOIP_USERTYPE_EDITION_V6 == i || GEOIP_REGISTRAR_EDITION_V6 == i || GEOIP_DOMAIN_EDITION_V6 == i || GEOIP_ORG_EDITION_V6 == i || GEOIP_ISP_EDITION_V6 == i || GEOIP_NETSPEED_EDITION_REV1_V6 == i
+	var cname *C.char
 
-	cname := C.GeoIP_name_by_addr(gi.db, cip)
+	switch gi.db.databaseType {
+	case GEOIP_LOCATIONA_EDITION_V6, GEOIP_ASNUM_EDITION_V6,
+		GEOIP_USERTYPE_EDITION_V6, GEOIP_REGISTRAR_EDITION_V6,
+		GEOIP_DOMAIN_EDITION_V6, GEOIP_ORG_EDITION_V6,
+		GEOIP_ISP_EDITION_V6, GEOIP_NETSPEED_EDITION_REV1_V6:
+		cname = C.GeoIP_name_by_addr_v6(gi.db, cip)
+
+	default:
+		cname = C.GeoIP_name_by_addr(gi.db, cip)
+
+	}
 
 	if cname != nil {
 		name = C.GoString(cname)
@@ -266,7 +276,8 @@ func GetRegionName(countryCode, regionCode string) string {
 	return regionName
 }
 
-// Same as GetName() but for IPv6 addresses.
+// Same as GetName() but for IPv6 addresses (obsolete, GetName() should
+// do the right thing on IPv6 databases).
 func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 	if gi.db == nil {
 		return

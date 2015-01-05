@@ -4,7 +4,7 @@ before_install:
 install:
   - mkdir -p $TRAVIS_BUILD_DIR/db
   - curl http://geodns.bitnames.com/geoip/GeoLiteCity.dat.gz  | gzip -cd > $TRAVIS_BUILD_DIR/db/GeoLiteCity.dat
-  - go get launchpad.net/gocheck
+  - go get gopkg.in/check.v1
 script:
   - cd $TRAVIS_BUILD_DIR && go test -gocheck.v
   - go test -gocheck.v -gocheck.b -gocheck.btime=2s

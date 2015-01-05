@@ -12,6 +12,9 @@ You can download the free [GeoLite
 Country](http://www.maxmind.com/app/geoip_country) database or you can
 [subscribe to updates](http://www.maxmind.com/app/country).
 
+The package is compatible with Go 1.3 and 1.4. Older versions work
+with older versions of Go.
+
 ## Examples
 
 	file := "/usr/share/GeoIP/GeoIP.dat"

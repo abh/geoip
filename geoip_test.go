@@ -35,14 +35,14 @@ func (s *GeoIPSuite) Testv4(c *C) {
 
 func (s *GeoIPSuite) TestOpenType(c *C) {
 
-	// SetCustomDirectory("/Users/ask/go/src/geoip/db")
+	SetCustomDirectory("test-db")
 
 	// Open Country database
 	gi, err := OpenType(GEOIP_COUNTRY_EDITION)
 	c.Check(err, IsNil)
 	c.Assert(gi, NotNil)
-	country, _ := gi.GetCountry("207.171.7.51")
-	c.Check(country, Equals, "US")
+	country, _ := gi.GetCountry("81.2.69.160")
+	c.Check(country, Equals, "GB")
 }
 
 func (s *GeoIPSuite) Benchmark_GetCountry(c *C) {

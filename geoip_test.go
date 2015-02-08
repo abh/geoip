@@ -81,6 +81,7 @@ func (s *GeoIPSuite) Testv4Record(c *C) {
 			Latitude:      37.5079,
 			Longitude:     -121.96,
 			AreaCode:      510,
+			MetroCode:     807,
 			CharSet:       1,
 			ContinentCode: "NA",
 		},

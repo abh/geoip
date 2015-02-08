@@ -51,8 +51,8 @@ func Open(files ...string) (*GeoIP, error) {
 	return OpenDb(files, GEOIP_MEMORY_CACHE)
 }
 
-// Opens a GeoIP database by filename with specified GeoIPOptions flag. 
-// All formats supported by libgeoip are supported though there are only 
+// Opens a GeoIP database by filename with specified GeoIPOptions flag.
+// All formats supported by libgeoip are supported though there are only
 // functions to access some of the databases in this API.
 // If you don't pass a filename, it will try opening the database from
 // a list of common paths.
@@ -111,8 +111,8 @@ func SetCustomDirectory(dir string) {
 	C.GeoIP_setup_custom_directory(cdir)
 }
 
-// OpenType opens a specified GeoIP database type in the default location with the 
-// specified GeoIPOptions flag. Constants are defined for each database type 
+// OpenType opens a specified GeoIP database type in the default location with the
+// specified GeoIPOptions flag. Constants are defined for each database type
 // (for example GEOIP_COUNTRY_EDITION).
 func OpenType(dbType int, flag int) (*GeoIP, error) {
 	g := &GeoIP{}
@@ -212,7 +212,7 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	rec.ContinentCode = C.GoString(record.continent_code)
 
 	if gi.db.databaseType != C.GEOIP_CITY_EDITION_REV0 {
-		/* DIRTY HACK BELOW: 
+		/* DIRTY HACK BELOW:
 		   The GeoIPRecord struct in GeoIPCity.h contains an int32 union of metro_code and dma_code.
 		   The union is unnamed, so cgo names it anon0 and assumes it's a 4-byte array.
 		*/

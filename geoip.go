@@ -46,13 +46,17 @@ func (gi *GeoIP) free() {
 	return
 }
 
-// Opens a GeoIP database by filename, all formats supported by libgeoip are
-// supported though there are only functions to access some of the databases in this API.
-// The database is opened in MEMORY_CACHE mode, if you need to optimize for memory
-// instead of performance you should change this.
+// Default convenience wrapper around OpenDb
+func Open(files ...string) (*GeoIP, error) {
+	return OpenDb(files, GEOIP_MEMORY_CACHE)
+}
+
+// Opens a GeoIP database by filename with specified GeoIPOptions flag. 
+// All formats supported by libgeoip are supported though there are only 
+// functions to access some of the databases in this API.
 // If you don't pass a filename, it will try opening the database from
 // a list of common paths.
-func Open(files ...string) (*GeoIP, error) {
+func OpenDb(files []string, flag int) (*GeoIP, error) {
 	if len(files) == 0 {
 		files = []string{
 			"/usr/share/GeoIP/GeoIP.dat",       // Linux default
@@ -81,7 +85,7 @@ func Open(files ...string) (*GeoIP, error) {
 		cbase := C.CString(file)
 		defer C.free(unsafe.Pointer(cbase))
 
-		g.db, err = C.GeoIP_open(cbase, C.GEOIP_MEMORY_CACHE)
+		g.db, err = C.GeoIP_open(cbase, C.int(flag))
 		if g.db != nil && err != nil {
 			break
 		}
@@ -107,15 +111,16 @@ func SetCustomDirectory(dir string) {
 	C.GeoIP_setup_custom_directory(cdir)
 }
 
-// OpenType opens a specified GeoIP database type in the default location. Constants
-// are defined for each database type (for example GEOIP_COUNTRY_EDITION).
-func OpenType(dbType int) (*GeoIP, error) {
+// OpenType opens a specified GeoIP database type in the default location with the 
+// specified GeoIPOptions flag. Constants are defined for each database type 
+// (for example GEOIP_COUNTRY_EDITION).
+func OpenType(dbType int, flag int) (*GeoIP, error) {
 	g := &GeoIP{}
 	runtime.SetFinalizer(g, (*GeoIP).free)
 
 	var err error
 
-	g.db, err = C.GeoIP_open_type(C.int(dbType), C.GEOIP_MEMORY_CACHE)
+	g.db, err = C.GeoIP_open_type(C.int(dbType), C.int(flag))
 	if err != nil {
 		return nil, fmt.Errorf("Error opening GeoIP database (%d): %s", dbType, err)
 	}

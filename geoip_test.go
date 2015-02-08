@@ -38,7 +38,7 @@ func (s *GeoIPSuite) TestOpenType(c *C) {
 	SetCustomDirectory("test-db")
 
 	// Open Country database
-	gi, err := OpenType(GEOIP_COUNTRY_EDITION)
+	gi, err := OpenType(GEOIP_COUNTRY_EDITION, GEOIP_MEMORY_CACHE)
 	c.Check(err, IsNil)
 	c.Assert(gi, NotNil)
 	country, _ := gi.GetCountry("81.2.69.160")

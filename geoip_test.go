@@ -24,25 +24,25 @@ func (s *GeoIPSuite) Testv4(c *C) {
 
 	c.Check(gi, NotNil)
 
-	country, netmask := gi.GetCountry("207.171.7.51")
+	country, netmask := gi.GetCountry("64.17.254.216")
 	c.Check(country, Equals, "US")
-	c.Check(netmask, Equals, 15)
+	c.Check(netmask, Equals, 17)
 
-	country, netmask = gi.GetCountry("149.20.64.42")
-	c.Check(country, Equals, "US")
-	c.Check(netmask, Equals, 13)
+	country, netmask = gi.GetCountry("222.230.136.0")
+	c.Check(country, Equals, "JP")
+	c.Check(netmask, Equals, 16)
 }
 
 func (s *GeoIPSuite) TestOpenType(c *C) {
 
-	// SetCustomDirectory("/Users/ask/go/src/geoip/db")
+	SetCustomDirectory("test-db")
 
 	// Open Country database
-	gi, err := OpenType(GEOIP_COUNTRY_EDITION)
+	gi, err := OpenType(GEOIP_COUNTRY_EDITION, GEOIP_MEMORY_CACHE)
 	c.Check(err, IsNil)
 	c.Assert(gi, NotNil)
-	country, _ := gi.GetCountry("207.171.7.51")
-	c.Check(country, Equals, "US")
+	country, _ := gi.GetCountry("81.2.69.160")
+	c.Check(country, Equals, "GB")
 }
 
 func (s *GeoIPSuite) Benchmark_GetCountry(c *C) {
@@ -58,7 +58,7 @@ func (s *GeoIPSuite) Benchmark_GetCountry(c *C) {
 }
 
 func (s *GeoIPSuite) Testv4Record(c *C) {
-	gi, err := Open("db/GeoLiteCity.dat")
+	gi, err := Open("test-db/GeoIPCity.dat")
 	if gi == nil || err != nil {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 		return
@@ -66,16 +66,31 @@ func (s *GeoIPSuite) Testv4Record(c *C) {
 
 	c.Check(gi, NotNil)
 
-	record := gi.GetRecord("207.171.7.51")
+	record := gi.GetRecord("66.92.181.240")
 	c.Assert(record, NotNil)
-	c.Check(record.CountryCode, Equals, "US")
-	fmt.Printf("Record: %#v\n", record)
-
+	c.Check(
+		*record,
+		Equals,
+		GeoIPRecord{
+			CountryCode:   "US",
+			CountryCode3:  "USA",
+			CountryName:   "United States",
+			Region:        "CA",
+			City:          "Fremont",
+			PostalCode:    "94538",
+			Latitude:      37.5079,
+			Longitude:     -121.96,
+			AreaCode:      510,
+			MetroCode:     807,
+			CharSet:       1,
+			ContinentCode: "NA",
+		},
+	)
 }
 
 func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 
-	gi, err := Open("db/GeoIPCity.dat")
+	gi, err := Open("db/GeoLiteCity.dat")
 	if gi == nil || err != nil {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 		return
@@ -90,13 +105,13 @@ func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 }
 
 func (s *GeoIPSuite) Testv4Region(c *C) {
-	gi, err := Open("db/GeoIPRegion.dat")
+	gi, err := Open("test-db/GeoIPRegion.dat")
 	if gi == nil || err != nil {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 		return
 	}
 
-	country, region := gi.GetRegion("207.171.7.51")
+	country, region := gi.GetRegion("64.17.254.223")
 	c.Check(country, Equals, "US")
 	c.Check(region, Equals, "CA")
 }

@@ -114,7 +114,7 @@ func SetCustomDirectory(dir string) {
 // OpenType opens a specified GeoIP database type in the default location with the
 // specified GeoIPOptions flag. Constants are defined for each database type
 // (for example GEOIP_COUNTRY_EDITION).
-func OpenType(dbType int, flag int) (*GeoIP, error) {
+func OpenTypeFlag(dbType int, flag int) (*GeoIP, error) {
 	g := &GeoIP{}
 	runtime.SetFinalizer(g, (*GeoIP).free)
 
@@ -132,6 +132,12 @@ func OpenType(dbType int, flag int) (*GeoIP, error) {
 	C.GeoIP_set_charset(g.db, C.GEOIP_CHARSET_UTF8)
 
 	return g, nil
+}
+
+// OpenType opens a specified GeoIP database type in the default location
+// and the 'memory cache' flag. Use OpenTypeFlag() to specify flag.
+func OpenType(dbType int) (*GeoIP, error) {
+	return OpenTypeFlag(dbType, GEOIP_MEMORY_CACHE)
 }
 
 // Takes an IPv4 address string and returns the organization name for that IP.

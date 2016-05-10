@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/abh/geoip"
 )
 
@@ -54,7 +55,7 @@ func main() {
 
 }
 
-func test4(g geoip.GeoIP, ip string) {
+func test4(g *geoip.GeoIP, ip string) {
 	test(func(s string) (string, int) { return g.GetCountry(s) }, ip)
 }
 

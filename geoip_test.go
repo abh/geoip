@@ -122,3 +122,36 @@ func (s *GeoIPSuite) TestRegionName(c *C) {
 	regionName = GetRegionName("CA", "ON")
 	c.Check(regionName, Equals, "Ontario")
 }
+
+func (s *GeoIPSuite) TestGetContinent(c *C) {
+	gi, err := Open("db/GeoIP.dat")
+	if gi == nil || err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+		return
+	}
+
+	continentName, countryName, netmask := gi.GetContinent("207.171.7.51")
+	c.Check(continentName, Equals, "NA")
+	c.Check(countryName, Equals, "United States")
+	c.Check(netmask, Equals, 15)
+
+	continentName, countryName, netmask = gi.GetContinent("62.217.45.197")
+	c.Check(continentName, Equals, "EU")
+	c.Check(countryName, Equals, "Germany")
+	c.Check(netmask, Equals, 19)
+}
+
+func (s *GeoIPSuite) Benchmark_GetContinent(c *C) {
+	gi, err := Open("db/GeoIP.dat")
+	if gi == nil || err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+		return
+	}
+
+	for i := 0; i < c.N; i++ {
+		continentName, countryName, netmask := gi.GetContinent("207.171.7.51")
+		if continentName == "" || countryName == "" || netmask == 0 {
+			panic("")
+		}
+	}
+}

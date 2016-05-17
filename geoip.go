@@ -2,7 +2,7 @@
 package geoip
 
 /*
-#cgo pkg-config: geoip  
+#cgo pkg-config: geoip
 #include <stdio.h>
 #include <errno.h>
 #include <GeoIP.h>
@@ -139,37 +139,6 @@ func OpenType(dbType int) (*GeoIP, error) {
 	return OpenTypeFlag(dbType, GEOIP_MEMORY_CACHE)
 }
 
-// Takes an IPv4 address string and returns the organization name for that IP.
-// Requires the GeoIP organization database.
-func (gi *GeoIP) GetOrg(ip string) string {
-	name, _ := gi.GetName(ip)
-	return name
-}
-
-// Works on the ASN, Netspeed, Organization and probably other
-// databases, takes and IP string and returns a "name" and the
-// netmask.
-func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
-	if gi.db == nil {
-		return
-	}
-
-	gi.mu.Lock()
-	defer gi.mu.Unlock()
-
-	cip := C.CString(ip)
-	defer C.free(unsafe.Pointer(cip))
-	cname := C.GeoIP_name_by_addr(gi.db, cip)
-
-	if cname != nil {
-		name = C.GoString(cname)
-		defer C.free(unsafe.Pointer(cname))
-		netmask = int(C.GeoIP_last_netmask(gi.db))
-		return
-	}
-	return
-}
-
 type GeoIPRecord struct {
 	CountryCode   string
 	CountryCode3  string
@@ -185,7 +154,33 @@ type GeoIPRecord struct {
 	ContinentCode string
 }
 
-// Returns the "City Record" for an IP address. Requires the GeoCity(Lite)
+// Populate GeoIPRecord
+func populateGeoIPRecords(databaseType C.char, record *C.GeoIPRecord) *GeoIPRecord {
+	rec := new(GeoIPRecord)
+	rec.CountryCode = C.GoString(record.country_code)
+	rec.CountryCode3 = C.GoString(record.country_code3)
+	rec.CountryName = C.GoString(record.country_name)
+	rec.Region = C.GoString(record.region)
+	rec.City = C.GoString(record.city)
+	rec.PostalCode = C.GoString(record.postal_code)
+	rec.Latitude = float32(record.latitude)
+	rec.Longitude = float32(record.longitude)
+	rec.CharSet = int(record.charset)
+	rec.ContinentCode = C.GoString(record.continent_code)
+
+	if databaseType != C.GEOIP_CITY_EDITION_REV0 {
+		/* DIRTY HACK BELOW:
+		   The GeoIPRecord struct in GeoIPCity.h contains an int32 union of metro_code and dma_code.
+		   The union is unnamed, so cgo names it anon0 and assumes it's a 4-byte array.
+		*/
+		union_int := (*int32)(unsafe.Pointer(&record.anon0))
+		rec.MetroCode = int(*union_int)
+		rec.AreaCode = int(record.area_code)
+	}
+	return rec
+}
+
+// Returns the "City Record" for an IPv4 address. Requires the GeoCity(Lite)
 // database - http://www.maxmind.com/en/city
 func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	if gi.db == nil {
@@ -202,31 +197,30 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	if record == nil {
 		return nil
 	}
-	// defer C.free(unsafe.Pointer(record))
 	defer C.GeoIPRecord_delete(record)
-	rec := new(GeoIPRecord)
-	rec.CountryCode = C.GoString(record.country_code)
-	rec.CountryCode3 = C.GoString(record.country_code3)
-	rec.CountryName = C.GoString(record.country_name)
-	rec.Region = C.GoString(record.region)
-	rec.City = C.GoString(record.city)
-	rec.PostalCode = C.GoString(record.postal_code)
-	rec.Latitude = float32(record.latitude)
-	rec.Longitude = float32(record.longitude)
-	rec.CharSet = int(record.charset)
-	rec.ContinentCode = C.GoString(record.continent_code)
 
-	if gi.db.databaseType != C.GEOIP_CITY_EDITION_REV0 {
-		/* DIRTY HACK BELOW:
-		   The GeoIPRecord struct in GeoIPCity.h contains an int32 union of metro_code and dma_code.
-		   The union is unnamed, so cgo names it anon0 and assumes it's a 4-byte array.
-		*/
-		union_int := (*int32)(unsafe.Pointer(&record.anon0))
-		rec.MetroCode = int(*union_int)
-		rec.AreaCode = int(record.area_code)
+	return populateGeoIPRecords(gi.db.databaseType, record)
+}
+
+// Same as GetRecord() but for IPv6.
+func (gi *GeoIP) GetRecordV6(ip string) *GeoIPRecord {
+	if gi.db == nil {
+		return nil
 	}
 
-	return rec
+	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
+
+	gi.mu.Lock()
+	record := C.GeoIP_record_by_addr_v6(gi.db, cip)
+	gi.mu.Unlock()
+
+	if record == nil {
+		return nil
+	}
+	defer C.GeoIPRecord_delete(record)
+
+	return populateGeoIPRecords(gi.db.databaseType, record)
 }
 
 // Returns the country code and region code for an IP address. Requires
@@ -274,6 +268,30 @@ func GetRegionName(countryCode, regionCode string) string {
 	return regionName
 }
 
+// Works on the ASN, Netspeed, Organization and probably other
+// databases, takes and IP string and returns a "name" and the
+// netmask.
+func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
+	if gi.db == nil {
+		return
+	}
+
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
+
+	cip := C.CString(ip)
+	defer C.free(unsafe.Pointer(cip))
+	cname := C.GeoIP_name_by_addr(gi.db, cip)
+
+	if cname != nil {
+		name = C.GoString(cname)
+		defer C.free(unsafe.Pointer(cname))
+		netmask = int(C.GeoIP_last_netmask(gi.db))
+		return
+	}
+	return
+}
+
 // Same as GetName() but for IPv6 addresses.
 func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 	if gi.db == nil {
@@ -294,6 +312,19 @@ func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 		return
 	}
 	return
+}
+
+// Takes an IPv4 address string and returns the organization name for that IP.
+// Requires the GeoIP organization database.
+func (gi *GeoIP) GetOrg(ip string) string {
+	name, _ := gi.GetName(ip)
+	return name
+}
+
+// Same as GetOrg() but for IPv6.
+func (gi *GeoIP) GetOrgV6(ip string) string {
+	name, _ := gi.GetNameV6(ip)
+	return name
 }
 
 // Takes an IPv4 address string and returns the country code for that IP
@@ -318,9 +349,9 @@ func (gi *GeoIP) GetCountry(ip string) (cc string, netmask int) {
 	return
 }
 
-// GetCountry_v6 works the same as GetCountry except for IPv6 addresses, be sure to
+// GetCountryV6 works the same as GetCountry except for IPv6 addresses, be sure to
 // load a database with IPv6 data to get any results.
-func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
+func (gi *GeoIP) GetCountryV6(ip string) (cc string, netmask int) {
 	if gi.db == nil {
 		return
 	}
@@ -337,4 +368,9 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 		return
 	}
 	return
+}
+
+// Deprecated, use GetCountryV6() instead.
+func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
+	return gi.GetCountryV6(ip)
 }

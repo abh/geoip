@@ -229,6 +229,17 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	return rec
 }
 
+// Returns the Time Zone name from the tz database
+// e.g. "America/New_York"
+func GetTimeZone(country_code, region string) string {
+	cc := C.CString(country_code)
+	defer C.free(unsafe.Pointer(cc))
+	cr := C.CString(region)
+	defer C.free(unsafe.Pointer(cr))
+
+	return C.GoString(C.GeoIP_time_zone_by_country_and_region(cc, cr))
+}
+
 // Returns the country code and region code for an IP address. Requires
 // the GeoIP Region database.
 func (gi *GeoIP) GetRegion(ip string) (string, string) {

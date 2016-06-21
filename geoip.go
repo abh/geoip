@@ -2,7 +2,7 @@
 package geoip
 
 /*
-#cgo pkg-config: geoip  
+#cgo pkg-config: geoip
 #include <stdio.h>
 #include <errno.h>
 #include <GeoIP.h>
@@ -202,7 +202,7 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 	if record == nil {
 		return nil
 	}
-	// defer C.free(unsafe.Pointer(record))
+	defer C.free(unsafe.Pointer(record))
 	defer C.GeoIPRecord_delete(record)
 	rec := new(GeoIPRecord)
 	rec.CountryCode = C.GoString(record.country_code)

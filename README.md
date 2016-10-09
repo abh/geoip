@@ -55,7 +55,7 @@ Country](http://www.maxmind.com/app/geoip_country) database or you can
 	
 	github.com/chennqqi/geoip or source repo github.com/abh/geoip
 
-	my MSYS don't contain `pkg-config`, so i comment in geoip.go
+	my MSYS don't contain `pkg-config`, so i comment it in geoip.go
 
 
 ## Contact

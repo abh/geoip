@@ -2,7 +2,7 @@
 package geoip
 
 /*
-#cgo pkg-config: geoip  
+//#cgo pkg-config: geoip  
 #include <stdio.h>
 #include <errno.h>
 #include <GeoIP.h>

@@ -29,6 +29,34 @@ Country](http://www.maxmind.com/app/geoip_country) database or you can
 	country := gi6.GetCountry_v6("2607:f238:2::5")
 	fmt.Println(country)
 
+## build
+
+###windows use MSYS/MSYS2
+
+1. build libGeoIP (geoip-api-c)
+	
+		see https://github.com/maxmind/geoip-api-c/releases page
+		download latest version
+		tar xvf ...
+
+		./configure --disable-shared --disable-dependency-tracking --disable-data-files CFLAGS=-D_WIN32_WINNT=0x0501
+
+	`CFLAGS=-D_WIN32_WINNT=0x0501` enable link winsock2 `ws32`
+	without this will show build error :
+	
+		Undefined reference to getaddrinfo
+		...
+	 
+		
+2. build(install) geoip static
+
+		CGO_ENABLED=1 GOOS=windows CGO_CFLAGS=-I/usr/local/include CGO_LDFLAGS='-L/usr/local/lib -lGeoIP -lwsock32 -lws2_32' go install -x --ldflags '-extldflags "-static"' github.com/chennqqi/geoip
+	
+	
+	github.com/chennqqi/geoip or source repo github.com/abh/geoip
+
+	my MSYS don't contain `pkg-config`, so i comment in geoip.go
+
 
 ## Contact
 

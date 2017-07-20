@@ -88,6 +88,37 @@ func (s *GeoIPSuite) Testv4Record(c *C) {
 	)
 }
 
+func (s *GeoIPSuite) Testv6Record(c *C) {
+	gi, err := Open("test-db/GeoLiteCityv6.dat")
+	if gi == nil || err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+		return
+	}
+
+	c.Check(gi, NotNil)
+
+	record := gi.GetRecordV6("2001:208::")
+	c.Assert(record, NotNil)
+	c.Check(
+		*record,
+		Equals,
+		GeoIPRecord{
+			CountryCode:   "SG",
+			CountryCode3:  "SGP",
+			CountryName:   "Singapore",
+			Region:        "",
+			City:          "",
+			PostalCode:    "",
+			Latitude:      1.3667,
+			Longitude:     103.8,
+			AreaCode:      0,
+			MetroCode:     0,
+			CharSet:       1,
+			ContinentCode: "AS",
+		},
+	)
+}
+
 func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 
 	gi, err := Open("db/GeoLiteCity.dat")

@@ -122,3 +122,14 @@ func (s *GeoIPSuite) TestRegionName(c *C) {
 	regionName = GetRegionName("CA", "ON")
 	c.Check(regionName, Equals, "Ontario")
 }
+
+func (s *GeoIPSuite) TestDatabaseInfo(c *C) {
+	gi, err := Open("test-db/GeoIP.dat")
+	if err != nil {
+		fmt.Printf("Could not open GeoIP database: %s\n", err)
+		return
+	}
+
+	databaseInfo := gi.GetDatabaseInfo()
+	c.Check(databaseInfo, Equals, "")
+}

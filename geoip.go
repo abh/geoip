@@ -2,7 +2,7 @@
 package geoip
 
 /*
-#cgo pkg-config: geoip  
+#cgo pkg-config: geoip
 #include <stdio.h>
 #include <errno.h>
 #include <GeoIP.h>
@@ -337,4 +337,20 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 		return
 	}
 	return
+}
+
+func (gi *GeoIP) GetDatabaseInfo() string {
+	if gi.db == nil {
+		return ""
+	}
+
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
+
+	cdbinfo := C.GeoIP_database_info(gi.db)
+	defer C.free(unsafe.Pointer(cdbinfo))
+	if cdbinfo != nil {
+		return C.GoString(cdbinfo)
+	}
+	return ""
 }

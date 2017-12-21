@@ -190,12 +190,22 @@ type GeoIPRecord struct {
 // Returns the "City Record" for an IP address. Requires the GeoCity(Lite)
 // database - http://www.maxmind.com/en/city
 func (gi *GeoIP) GetRecord(ipString string) *GeoIPRecord {
-	if gi.db == nil {
+	if gi == nil || gi.db == nil {
+		return nil
+	}
+
+	if gi.db.databaseType != GEOIP_CITY_EDITION_REV0 &&
+		gi.db.databaseType != GEOIP_CITY_EDITION_REV1 {
 		return nil
 	}
 
 	ip := net.ParseIP(ipString)
 	if ip == nil {
+		return nil
+	}
+
+	// It's only valid to look up IPv4 IPs this way.
+	if ip := ip.To4(); ip == nil {
 		return nil
 	}
 

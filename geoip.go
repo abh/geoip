@@ -432,3 +432,13 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	}
 	return
 }
+
+// EnableTeredo enables Teredo support. This is on by default.
+func (gi *GeoIP) EnableTeredo() {
+	C.GeoIP_enable_teredo(gi.db, C.int(1))
+}
+
+// DisableTeredo disable Teredo support. This is on by default.
+func (gi *GeoIP) DisableTeredo() {
+	C.GeoIP_enable_teredo(gi.db, C.int(0))
+}

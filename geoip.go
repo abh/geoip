@@ -183,6 +183,7 @@ type GeoIPRecord struct {
 	AreaCode      int
 	CharSet       int
 	ContinentCode string
+	Netmask       int
 }
 
 // Returns the "City Record" for an IP address. Requires the GeoCity(Lite)
@@ -225,6 +226,8 @@ func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
 		rec.MetroCode = int(*union_int)
 		rec.AreaCode = int(record.area_code)
 	}
+
+	rec.Netmask = int(record.netmask)
 
 	return rec
 }

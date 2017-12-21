@@ -84,6 +84,7 @@ func (s *GeoIPSuite) Testv4Record(c *C) {
 			MetroCode:     807,
 			CharSet:       1,
 			ContinentCode: "NA",
+			Netmask:       28,
 		},
 	)
 }

@@ -102,6 +102,58 @@ func (s *GeoIPSuite) TestGetRecordInvalidIP(c *C) {
 	c.Check(record, IsNil)
 }
 
+func (s *GeoIPSuite) TestLookupIPv4CityRecordFound(c *C) {
+	gi, err := Open("test-db/GeoIPCity.dat")
+	if gi == nil || err != nil {
+		c.Fatalf("Could not open GeoIP database: %s", err)
+		return
+	}
+
+	c.Check(gi, NotNil)
+
+	result, err := gi.LookupIPv4City("66.92.181.240")
+	c.Check(err, IsNil)
+
+	c.Check(result.Netmask, Equals, 28)
+	c.Check(result.Record, NotNil)
+
+	c.Check(
+		*result.Record,
+		Equals,
+		GeoIPRecord{
+			CountryCode:   "US",
+			CountryCode3:  "USA",
+			CountryName:   "United States",
+			Region:        "CA",
+			City:          "Fremont",
+			PostalCode:    "94538",
+			Latitude:      37.5079,
+			Longitude:     -121.96,
+			AreaCode:      510,
+			MetroCode:     807,
+			CharSet:       1,
+			ContinentCode: "NA",
+			Netmask:       28,
+		},
+	)
+}
+
+func (s *GeoIPSuite) TestLookupIPv4CityRecordNotFound(c *C) {
+	gi, err := Open("test-db/GeoIPCity.dat")
+	if gi == nil || err != nil {
+		c.Fatalf("Could not open GeoIP database: %s", err)
+		return
+	}
+
+	c.Check(gi, NotNil)
+
+	result, err := gi.LookupIPv4City("0.0.0.0")
+	c.Check(err, IsNil)
+
+	c.Check(result.Netmask, Equals, 5)
+	c.Check(result.Record, IsNil)
+}
+
 func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 
 	gi, err := Open("db/GeoLiteCity.dat")

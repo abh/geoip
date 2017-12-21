@@ -187,26 +187,50 @@ type GeoIPRecord struct {
 	Netmask       int
 }
 
+// CityResult holds the result of looking up an IP in a City type database. The
+// lookup may be from either an IPv4 or IPv6 database.
+type CityResult struct {
+	Record  *GeoIPRecord
+	Netmask int
+}
+
+// LookupIPv4City looks up the IP in the database. The database must be an IPv4
+// City database.
+//
+// This is the same as GetRecord() except it also provides information when the
+// IP is not in the database. Specifically, the netmask. The netmask is useful
+// for iterating the database.
+func (gi *GeoIP) LookupIPv4City(ipString string) (CityResult, error) {
+	return gi.lookupIPv4City(ipString)
+}
+
 // Returns the "City Record" for an IP address. Requires the GeoCity(Lite)
 // database - http://www.maxmind.com/en/city
 func (gi *GeoIP) GetRecord(ipString string) *GeoIPRecord {
+	// We could return whether there was an error, but I'm trying to not change
+	// the API.
+	result, _ := gi.lookupIPv4City(ipString)
+	return result.Record
+}
+
+func (gi *GeoIP) lookupIPv4City(ipString string) (CityResult, error) {
 	if gi == nil || gi.db == nil {
-		return nil
+		return CityResult{}, fmt.Errorf("database is not loaded")
 	}
 
 	if gi.db.databaseType != GEOIP_CITY_EDITION_REV0 &&
 		gi.db.databaseType != GEOIP_CITY_EDITION_REV1 {
-		return nil
+		return CityResult{}, fmt.Errorf("invalid database type")
 	}
 
 	ip := net.ParseIP(ipString)
 	if ip == nil {
-		return nil
+		return CityResult{}, fmt.Errorf("invalid IP address")
 	}
 
 	// It's only valid to look up IPv4 IPs this way.
 	if ip := ip.To4(); ip == nil {
-		return nil
+		return CityResult{}, fmt.Errorf("IPv6 IP given for IPv4-only lookup")
 	}
 
 	cip := C.CString(ipString)
@@ -214,15 +238,19 @@ func (gi *GeoIP) GetRecord(ipString string) *GeoIPRecord {
 
 	gi.mu.Lock()
 	record := C.GeoIP_record_by_addr(gi.db, cip)
+	netmask := int(gi.db.netmask)
 	gi.mu.Unlock()
 
 	if record == nil {
-		return nil
+		return CityResult{Netmask: netmask}, nil
 	}
 
 	defer C.GeoIPRecord_delete(record)
 
-	return gi.convertRecord(record)
+	return CityResult{
+		Record:  gi.convertRecord(record),
+		Netmask: netmask,
+	}, nil
 }
 
 func (gi *GeoIP) convertRecord(record *C.GeoIPRecord) *GeoIPRecord {
@@ -253,28 +281,26 @@ func (gi *GeoIP) convertRecord(record *C.GeoIPRecord) *GeoIPRecord {
 	return rec
 }
 
-// GetRecordIPv6 returns the city record for an IPv6 IP. This is only
+// LookupIPv6City returns the city record for an IPv6 IP. This is only
 // valid for the GeoLite City IPv6 database.
-//
-// TODO(horgh): Add test using IPv6 database.
-func (gi *GeoIP) GetRecordIPv6(ipString string) (*GeoIPRecord, error) {
+func (gi *GeoIP) LookupIPv6City(ipString string) (CityResult, error) {
 	if gi == nil || gi.db == nil {
-		return nil, fmt.Errorf("database is not loaded")
+		return CityResult{}, fmt.Errorf("database is not loaded")
 	}
 
 	if gi.db.databaseType != GEOIP_CITY_EDITION_REV0_V6 &&
 		gi.db.databaseType != GEOIP_CITY_EDITION_REV1_V6 {
-		return nil, fmt.Errorf("invalid database type")
+		return CityResult{}, fmt.Errorf("invalid database type")
 	}
 
 	ip := net.ParseIP(ipString)
 	if ip == nil {
-		return nil, fmt.Errorf("invalid IP address")
+		return CityResult{}, fmt.Errorf("invalid IP address")
 	}
 
 	// It's only valid to look up IPv6 IPs this way.
 	if ip := ip.To4(); ip != nil {
-		return nil, fmt.Errorf("IPv4 IP given for IPv6-only lookup")
+		return CityResult{}, fmt.Errorf("IPv4 IP given for IPv6-only lookup")
 	}
 
 	cip := C.CString(ipString)
@@ -282,15 +308,19 @@ func (gi *GeoIP) GetRecordIPv6(ipString string) (*GeoIPRecord, error) {
 
 	gi.mu.Lock()
 	record := C.GeoIP_record_by_addr_v6(gi.db, cip)
+	netmask := int(gi.db.netmask)
 	gi.mu.Unlock()
 
 	if record == nil {
-		return nil, nil
+		return CityResult{Netmask: netmask}, nil
 	}
 
 	defer C.GeoIPRecord_delete(record)
 
-	return gi.convertRecord(record), nil
+	return CityResult{
+		Record:  gi.convertRecord(record),
+		Netmask: netmask,
+	}, nil
 }
 
 // Returns the country code and region code for an IP address. Requires

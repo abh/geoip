@@ -154,6 +154,53 @@ func (s *GeoIPSuite) TestLookupIPv4CityRecordNotFound(c *C) {
 	c.Check(result.Record, IsNil)
 }
 
+func (s *GeoIPSuite) TestLookupIPv6CityRecordFound(c *C) {
+	gi, err := Open("test-db/GeoLiteCityv6.dat")
+	if gi == nil || err != nil {
+		c.Fatalf("Could not open GeoIP database: %s", err)
+		return
+	}
+
+	c.Check(gi, NotNil)
+
+	result, err := gi.LookupIPv6City("2001:200::")
+	c.Check(err, IsNil)
+
+	c.Check(result.Netmask, Equals, 32)
+	c.Check(result.Record, NotNil)
+
+	c.Check(
+		*result.Record,
+		Equals,
+		GeoIPRecord{
+			CountryCode:   "JP",
+			CountryCode3:  "JPN",
+			CountryName:   "Japan",
+			Latitude:      36,
+			Longitude:     138,
+			CharSet:       1,
+			ContinentCode: "AS",
+			Netmask:       32,
+		},
+	)
+}
+
+func (s *GeoIPSuite) TestLookupIPv6CityRecordNotFound(c *C) {
+	gi, err := Open("test-db/GeoLiteCityv6.dat")
+	if gi == nil || err != nil {
+		c.Fatalf("Could not open GeoIP database: %s", err)
+		return
+	}
+
+	c.Check(gi, NotNil)
+
+	result, err := gi.LookupIPv6City("2a02:cf::")
+	c.Check(err, IsNil)
+
+	c.Check(result.Netmask, Equals, 17)
+	c.Check(result.Record, IsNil)
+}
+
 func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 
 	gi, err := Open("db/GeoLiteCity.dat")

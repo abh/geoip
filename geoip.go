@@ -253,6 +253,46 @@ func (gi *GeoIP) convertRecord(record *C.GeoIPRecord) *GeoIPRecord {
 	return rec
 }
 
+// GetRecordIPv6 returns the city record for an IPv6 IP. This is only
+// valid for the GeoLite City IPv6 database.
+//
+// TODO(horgh): Add test using IPv6 database.
+func (gi *GeoIP) GetRecordIPv6(ipString string) (*GeoIPRecord, error) {
+	if gi == nil || gi.db == nil {
+		return nil, fmt.Errorf("database is not loaded")
+	}
+
+	if gi.db.databaseType != GEOIP_CITY_EDITION_REV0_V6 &&
+		gi.db.databaseType != GEOIP_CITY_EDITION_REV1_V6 {
+		return nil, fmt.Errorf("invalid database type")
+	}
+
+	ip := net.ParseIP(ipString)
+	if ip == nil {
+		return nil, fmt.Errorf("invalid IP address")
+	}
+
+	// It's only valid to look up IPv6 IPs this way.
+	if ip := ip.To4(); ip != nil {
+		return nil, fmt.Errorf("IPv4 IP given for IPv6-only lookup")
+	}
+
+	cip := C.CString(ipString)
+	defer C.free(unsafe.Pointer(cip))
+
+	gi.mu.Lock()
+	record := C.GeoIP_record_by_addr_v6(gi.db, cip)
+	gi.mu.Unlock()
+
+	if record == nil {
+		return nil, nil
+	}
+
+	defer C.GeoIPRecord_delete(record)
+
+	return gi.convertRecord(record), nil
+}
+
 // Returns the country code and region code for an IP address. Requires
 // the GeoIP Region database.
 func (gi *GeoIP) GetRegion(ip string) (string, string) {

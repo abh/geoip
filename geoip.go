@@ -209,8 +209,13 @@ func (gi *GeoIP) GetRecord(ipString string) *GeoIPRecord {
 	if record == nil {
 		return nil
 	}
-	// defer C.free(unsafe.Pointer(record))
+
 	defer C.GeoIPRecord_delete(record)
+
+	return gi.convertRecord(record)
+}
+
+func (gi *GeoIP) convertRecord(record *C.GeoIPRecord) *GeoIPRecord {
 	rec := new(GeoIPRecord)
 	rec.CountryCode = C.GoString(record.country_code)
 	rec.CountryCode3 = C.GoString(record.country_code3)

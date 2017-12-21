@@ -15,6 +15,7 @@ import "C"
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"runtime"
 	"sync"
@@ -188,12 +189,17 @@ type GeoIPRecord struct {
 
 // Returns the "City Record" for an IP address. Requires the GeoCity(Lite)
 // database - http://www.maxmind.com/en/city
-func (gi *GeoIP) GetRecord(ip string) *GeoIPRecord {
+func (gi *GeoIP) GetRecord(ipString string) *GeoIPRecord {
 	if gi.db == nil {
 		return nil
 	}
 
-	cip := C.CString(ip)
+	ip := net.ParseIP(ipString)
+	if ip == nil {
+		return nil
+	}
+
+	cip := C.CString(ipString)
 	defer C.free(unsafe.Pointer(cip))
 
 	gi.mu.Lock()

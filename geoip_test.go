@@ -89,6 +89,19 @@ func (s *GeoIPSuite) Testv4Record(c *C) {
 	)
 }
 
+func (s *GeoIPSuite) TestGetRecordInvalidIP(c *C) {
+	gi, err := Open("test-db/GeoIPCity.dat")
+	if gi == nil || err != nil {
+		c.Fatalf("Could not open GeoIP database: %s", err)
+		return
+	}
+
+	c.Check(gi, NotNil)
+
+	record := gi.GetRecord("blah")
+	c.Check(record, IsNil)
+}
+
 func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 
 	gi, err := Open("db/GeoLiteCity.dat")

@@ -433,12 +433,16 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	return
 }
 
-// EnableTeredo enables Teredo support. This is on by default.
+// EnableTeredo enables Teredo support. It is on by default.
 func (gi *GeoIP) EnableTeredo() {
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
 	C.GeoIP_enable_teredo(gi.db, C.int(1))
 }
 
-// DisableTeredo disable Teredo support. This is on by default.
+// DisableTeredo disable Teredo support. It is on by default.
 func (gi *GeoIP) DisableTeredo() {
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
 	C.GeoIP_enable_teredo(gi.db, C.int(0))
 }

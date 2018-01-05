@@ -162,10 +162,11 @@ func (gi *GeoIP) GetName(ip string) (name string, netmask int) {
 	defer C.free(unsafe.Pointer(cip))
 	cname := C.GeoIP_name_by_addr(gi.db, cip)
 
+	netmask = int(C.GeoIP_last_netmask(gi.db))
+
 	if cname != nil {
 		name = C.GoString(cname)
 		defer C.free(unsafe.Pointer(cname))
-		netmask = int(C.GeoIP_last_netmask(gi.db))
 		return
 	}
 	return
@@ -381,10 +382,11 @@ func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 	defer C.free(unsafe.Pointer(cip))
 	cname := C.GeoIP_name_by_addr_v6(gi.db, cip)
 
+	netmask = int(C.GeoIP_last_netmask(gi.db))
+
 	if cname != nil {
 		name = C.GoString(cname)
 		defer C.free(unsafe.Pointer(cname))
-		netmask = int(C.GeoIP_last_netmask(gi.db))
 		return
 	}
 	return

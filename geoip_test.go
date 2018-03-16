@@ -122,3 +122,25 @@ func (s *GeoIPSuite) TestRegionName(c *C) {
 	regionName = GetRegionName("CA", "ON")
 	c.Check(regionName, Equals, "Ontario")
 }
+
+func (s *GeoIPSuite) TestDatabaseType(c *C) {
+	cases := []struct {
+		path            string
+		expectedVersion int
+	}{
+		{"test-db/GeoIP.dat", GEOIP_COUNTRY_EDITION},
+		{"test-db/GeoIPCity.dat", GEOIP_CITY_EDITION_REV1},
+		{"test-db/GeoIPRegion.dat", GEOIP_REGION_EDITION_REV1},
+	}
+
+	for _, tc := range cases {
+		gi, err := Open(tc.path)
+		if gi == nil || err != nil {
+			fmt.Printf("Could not open GeoIP database: %s\n", err)
+			return
+		}
+
+		actualType := gi.DatabaseType()
+		c.Check(actualType, Equals, tc.expectedVersion)
+	}
+}

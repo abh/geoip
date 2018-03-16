@@ -139,6 +139,14 @@ func OpenType(dbType int) (*GeoIP, error) {
 	return OpenTypeFlag(dbType, GEOIP_MEMORY_CACHE)
 }
 
+// Returns database type
+func (gi *GeoIP) DatabaseType() int {
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
+
+	return int(gi.db.databaseType)
+}
+
 // Takes an IPv4 address string and returns the organization name for that IP.
 // Requires the GeoIP organization database.
 func (gi *GeoIP) GetOrg(ip string) string {

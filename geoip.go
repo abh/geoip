@@ -376,6 +376,25 @@ func GetRegionName(countryCode, regionCode string) string {
 	return regionName
 }
 
+// Returns the time zone given a country code and region code
+func GetTimeZone(countryCode, regionCode string) string {
+	cc := C.CString(countryCode)
+	defer C.free(unsafe.Pointer(cc))
+
+	rc := C.CString(regionCode)
+	defer C.free(unsafe.Pointer(rc))
+
+	tz := C.GeoIP_time_zone_by_country_and_region(cc, rc)
+	if tz == nil {
+		return ""
+	}
+
+	// it's a static string constant, don't free this
+	timeZone := C.GoString(tz)
+
+	return timeZone
+}
+
 // Same as GetName() but for IPv6 addresses.
 func (gi *GeoIP) GetNameV6(ip string) (name string, netmask int) {
 	if gi.db == nil {

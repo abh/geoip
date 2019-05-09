@@ -208,14 +208,14 @@ func (s *GeoIPSuite) TestLookupIPv6CityRecordNotFound(c *C) {
 
 func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 
-	gi, err := Open("db/GeoLiteCity.dat")
+	gi, err := Open("test-db/GeoIPCity.dat")
 	if gi == nil || err != nil {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 		return
 	}
 
 	for i := 0; i < c.N; i++ {
-		record := gi.GetRecord("207.171.7.51")
+		record := gi.GetRecord("89.92.212.32")
 		if record == nil {
 			panic("")
 		}

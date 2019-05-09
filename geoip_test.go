@@ -27,10 +27,15 @@ func (s *GeoIPSuite) Testv4(c *C) {
 	country, netmask := gi.GetCountry("64.17.254.216")
 	c.Check(country, Equals, "US")
 	c.Check(netmask, Equals, 17)
+	c.Check(gi.GetCountryNameFromCode("US"), Equals, "United States")
 
 	country, netmask = gi.GetCountry("222.230.136.0")
 	c.Check(country, Equals, "JP")
 	c.Check(netmask, Equals, 16)
+	c.Check(gi.GetCountryNameFromCode("JP"), Equals, "Japan")
+
+	c.Check(gi.GetCountryNameFromCode(""), Equals, "")
+	c.Check(gi.GetCountryNameFromCode("invalid"), Equals, "")
 }
 
 func (s *GeoIPSuite) TestOpenType(c *C) {

@@ -27,10 +27,15 @@ func (s *GeoIPSuite) Testv4(c *C) {
 	country, netmask := gi.GetCountry("64.17.254.216")
 	c.Check(country, Equals, "US")
 	c.Check(netmask, Equals, 17)
+	c.Check(gi.GetCountryNameFromCode("US"), Equals, "United States")
 
 	country, netmask = gi.GetCountry("222.230.136.0")
 	c.Check(country, Equals, "JP")
 	c.Check(netmask, Equals, 16)
+	c.Check(gi.GetCountryNameFromCode("JP"), Equals, "Japan")
+
+	c.Check(gi.GetCountryNameFromCode(""), Equals, "")
+	c.Check(gi.GetCountryNameFromCode("invalid"), Equals, "")
 }
 
 func (s *GeoIPSuite) TestOpenType(c *C) {
@@ -203,14 +208,14 @@ func (s *GeoIPSuite) TestLookupIPv6CityRecordNotFound(c *C) {
 
 func (s *GeoIPSuite) Benchmark_GetRecord(c *C) {
 
-	gi, err := Open("db/GeoLiteCity.dat")
+	gi, err := Open("test-db/GeoIPCity.dat")
 	if gi == nil || err != nil {
 		fmt.Printf("Could not open GeoIP database: %s\n", err)
 		return
 	}
 
 	for i := 0; i < c.N; i++ {
-		record := gi.GetRecord("207.171.7.51")
+		record := gi.GetRecord("89.92.212.32")
 		if record == nil {
 			panic("")
 		}

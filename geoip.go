@@ -461,6 +461,26 @@ func (gi *GeoIP) GetCountry_v6(ip string) (cc string, netmask int) {
 	return
 }
 
+// GetCountryNameFromCode returns the country name for the 2 letter country
+// code. If there is no name for the specified code, the empty string will
+// be returned.
+func (gi *GeoIP) GetCountryNameFromCode(code string) string {
+	if gi.db == nil {
+		return ""
+	}
+
+	gi.mu.Lock()
+	defer gi.mu.Unlock()
+
+	ccode := C.CString(code)
+	defer C.free(unsafe.Pointer(ccode))
+
+	cid := C.GeoIP_id_by_code(ccode)
+	cname := C.GeoIP_country_name_by_id(gi.db, cid)
+
+	return C.GoString(cname)
+}
+
 // EnableTeredo enables Teredo support. It is on by default.
 func (gi *GeoIP) EnableTeredo() {
 	gi.mu.Lock()
